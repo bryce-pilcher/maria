@@ -40,4 +40,3 @@ def read_git_log(file_to_read):
                     neo.add_relationship(commit_node, file_node, "changed",
                                          "lines_edited", "\'" + words[3] + "\'", driver)
 
-read_git_log("D:\\code\\CSC575Project\\out.txt")
