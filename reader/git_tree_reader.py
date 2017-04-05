@@ -5,9 +5,10 @@ driver = neo.get_driver(neo.ip, neo.port)
 
 
 def read_git_log(file_to_read):
-        with open(file_to_read) as git_log:
+        with open(file_to_read, encoding="utf8") as git_log:
             commit_node = {}
             for line in git_log:
+                print(line)
                 words = line.split(" ")
                 if line.startswith("commit"):
                     hash = words[1]

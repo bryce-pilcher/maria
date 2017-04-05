@@ -23,8 +23,10 @@ def create_node(a_node, driver):
             query += "}"
             break
 
-    query += ")"
-    session.run(query, a_node.attributes)
+    query += ") return a"
+    result = session.run(query, a_node.attributes)
+    session.sync()
+    session.close()
 
 
 def add_relationship(a_node, b_node, rel_type, rel_property, rel_property_value, driver):
@@ -34,19 +36,24 @@ def add_relationship(a_node, b_node, rel_type, rel_property, rel_property_value,
     query += "Where a." + a_node.unique_attr + " = \'" + a_node.unique_attr_value + "\'"
     query += " AND "
     query += "b." + b_node.unique_attr + " = \'" + b_node.unique_attr_value + "\' "
-    query += "CREATE (a)-[r:" + rel_type + " {" + rel_property + ": " + rel_property_value + "}]->(b)"
+    query += "CREATE (a)-[r:" + rel_type + " {" + rel_property + ": " + rel_property_value + "}]->(b) "
+    query += "return r"
 
-    session.run(query)
+    result = session.run(query)
+    session.sync()
+    session.close()
 
 
 def get_node(a_node, driver):
     session = driver.session()
 
-    query = "Match (n:" + a_node.type + " { " + a_node.unique_attr + ": \'" + a_node.unique_attr_value + "\'}) return n"
+    query = "Match (n:" + a_node.type + " { " + a_node.unique_attr + ": \"" + a_node.unique_attr_value + "\"}) return n"
     test = session.run(query)
+    session.sync()
     nodes = []
     for record in test:
         nodes.append(process_node(record[0]))
+    session.close()
     if len(nodes) < 1:
         return None
 
