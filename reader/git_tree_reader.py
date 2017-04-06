@@ -21,7 +21,7 @@ def read_git_log(file_to_read):
                     for x in range(1,len(words)):
                         if "<" not in words[x]:
                             name += words[x] + " "
-                    name = name.strip(" ")
+                    name = sanitize(name)
                     author_node = Neo4jNode("Author", "name", name, {"name": name})
                     nodes = neo.get_node(author_node, driver)
                     if nodes is None:
@@ -29,7 +29,7 @@ def read_git_log(file_to_read):
                     neo.add_relationship(author_node, commit_node, "committed",
                                          "author", "\'" + author_node.attributes['name'] + "\'", driver)
                 if "|" in line:
-                    file_path = words[1]
+                    file_path = sanitize(words[1])
                     file_parts = file_path.split("/")
                     file_name = file_parts[len(file_parts) - 1]
                     file_node = Neo4jNode("File", "file_path", file_path,
@@ -39,5 +39,9 @@ def read_git_log(file_to_read):
                     if nodes is None:
                         neo.create_node(file_node, driver)
                     neo.add_relationship(commit_node, file_node, "changed",
-                                         "lines_edited", "\'" + words[3] + "\'", driver)
+                                         "lines_edited", "\'" + sanitize(words[3]) + "\'", driver)
 
+
+def sanitize(string):
+    string = string.strip(" ").replace("\'", "").replace("\\", "").replace("\"", "")
+    return string
