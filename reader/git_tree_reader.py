@@ -7,6 +7,7 @@ driver = neo.get_driver(neo.ip, neo.port)
 def read_git_log(file_to_read):
         with open(file_to_read, encoding="utf8") as git_log:
             commit_node = {}
+            author_node = {}
             for line in git_log:
                 print(line)
                 words = line.split(" ")
@@ -26,8 +27,13 @@ def read_git_log(file_to_read):
                     nodes = neo.get_node(author_node, driver)
                     if nodes is None:
                         neo.create_node(author_node, driver)
+                if "Date:" in line:
+                    date = ""
+                    for item in words:
+                        if item != " " or item != "Date:":
+                            date += item + " "
                     neo.add_relationship(author_node, commit_node, "committed",
-                                         "author", "\'" + author_node.attributes['name'] + "\'", driver)
+                                         {'date':  date}, driver)
                 if "|" in line:
                     file_path = sanitize(words[1])
                     file_parts = file_path.split("/")
@@ -36,10 +42,11 @@ def read_git_log(file_to_read):
                                           {"file_name": file_name,
                                            "file_path": file_path})
                     nodes = neo.get_node(file_node, driver)
+                    index_of_bar = words.index("|")
                     if nodes is None:
                         neo.create_node(file_node, driver)
                     neo.add_relationship(commit_node, file_node, "changed",
-                                         "lines_edited", "\'" + sanitize(words[3]) + "\'", driver)
+                                         {'date':  date, "lines_edited": sanitize(words[index_of_bar + 1])}, driver)
 
 
 def sanitize(string):

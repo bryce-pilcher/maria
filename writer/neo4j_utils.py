@@ -29,14 +29,15 @@ def create_node(a_node, driver):
     session.close()
 
 
-def add_relationship(a_node, b_node, rel_type, rel_property, rel_property_value, driver):
+def add_relationship(a_node, b_node, rel_type, rel_property_map, driver):
     session = driver.session()
 
     query = "Match (a:" + a_node.type + "),(b:" + b_node.type + ") "
     query += "Where a." + a_node.unique_attr + " = \'" + a_node.unique_attr_value + "\'"
     query += " AND "
     query += "b." + b_node.unique_attr + " = \'" + b_node.unique_attr_value + "\' "
-    query += "CREATE (a)-[r:" + rel_type + " {" + rel_property + ": " + rel_property_value + "}]->(b) "
+    query += "CREATE (a)-[r:" + rel_type
+    query += " {" + ", ".join(k + ": " + "\'" + v + "\'" for k, v in rel_property_map.items()) + "}]->(b) "
     query += "return r"
 
     result = session.run(query)
