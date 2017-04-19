@@ -34,7 +34,7 @@ def read_git_log(file_to_read):
                             date += item + " "
                     neo.add_relationship(author_node, commit_node, "committed",
                                          {'date':  date}, driver)
-                if "|" in line:
+                if " | " in line:
                     file_path = sanitize(words[1])
                     file_parts = file_path.split("/")
                     file_name = file_parts[len(file_parts) - 1]
