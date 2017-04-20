@@ -13,8 +13,8 @@ def get_issues(repository, owner, state='open'):
     password = config['password']
     conn = h2_utils.get_connection("../databases/" + repository)
     table_name = "issues"
-    columns = ["title", "body", "closed_by", "assignee"]
-    data_types = ["VARCHAR(256)", "VARCHAR(4096)", "VARCHAR(64)", "VARCHAR(64)"]
+    columns = ["title", "body", "labels", "closed_by", "assignee"]
+    data_types = ["VARCHAR(256)", "VARCHAR(4096)","VARCHAR(256)", "VARCHAR(64)", "VARCHAR(64)"]
 
     # Make sure database is set up
     h2_utils.create_table(table_name, conn)
@@ -27,15 +27,28 @@ def get_issues(repository, owner, state='open'):
 
     # Iterate through issues
     for issue in issues:
+        requests_left = git.rate_limiting[0]
+        if requests_left < 20:
+            git.get_rate_limit()
+            reset_time = git.rate_limiting_resettime
+            current_time = int(datetime.now().timestamp())
+            time_remaining = min(reset_time - current_time, 0)
+            print("sleeping for " + str(time_remaining) + " seconds...")
+            time.sleep(time_remaining)
+
         # assignee, body, title, get_comments()
         if issue.pull_request is None:
             iss = string_utils.sanitize(issue.title)
             bod = string_utils.sanitize(issue.body)
+            label_list = [l.name for l in issue.labels]
+            labels = string_utils.sanitize(string_utils.list_to_string(label_list))
             if len(bod) > 4096:
                 bod = bod[:4096]
             if len(iss) > 256:
                 iss = iss[:256]
-            values = [iss, bod]
+            if len(labels) > 256:
+                labels = labels[:256]
+            values = [iss, bod, labels]
             closer = issue.closed_by
             assignee = issue.assignee
             if closer is not None:
@@ -48,15 +61,8 @@ def get_issues(repository, owner, state='open'):
                 values.append("")
             h2_utils.write_to_database("issues", values, columns, conn)
 
-        requests_left = git.rate_limiting[0]
-        if requests_left < 20:
-            reset_time = git.rate_limiting_resettime
-            current_time = int(datetime.now().timestamp())
-            time_remaining = reset_time - current_time
-            print("sleeping for " + str(time_remaining) + " seconds...")
-            time.sleep(time_remaining)
 
-get_issues("spring-boot", "spring-projects", state='closed')
+get_issues("tensorflow", "tensorflow", state='closed')
 
 
 

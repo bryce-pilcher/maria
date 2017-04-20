@@ -9,3 +9,10 @@ def sanitize(string):
     else:
         string = ""
     return string
+
+
+def list_to_string(list_of_things):
+    if list_of_things is not None:
+        return ", ".join(list_of_things)
+    else:
+        return ""
