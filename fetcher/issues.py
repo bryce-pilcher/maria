@@ -29,10 +29,10 @@ def get_issues(repository, owner, state='open'):
     for issue in issues:
         requests_left = git.rate_limiting[0]
         if requests_left < 20:
-            git.get_rate_limit()
-            reset_time = git.rate_limiting_resettime
-            current_time = int(datetime.now().timestamp())
-            time_remaining = min(reset_time - current_time, 0)
+            r = git.get_rate_limit()
+            reset_time = r.rate.reset.timestamp()
+            current_time = int(datetime.utcnow().timestamp())
+            time_remaining = max(reset_time - current_time, 0)
             print("sleeping for " + str(time_remaining) + " seconds...")
             time.sleep(time_remaining)
 
@@ -60,9 +60,3 @@ def get_issues(repository, owner, state='open'):
             else:
                 values.append("")
             h2_utils.write_to_database("issues", values, columns, conn)
-
-
-get_issues("tensorflow", "tensorflow", state='closed')
-
-
-
