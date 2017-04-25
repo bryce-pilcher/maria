@@ -1,5 +1,5 @@
 from neo4j.v1 import GraphDatabase, basic_auth
-from writer.neo4j_objects.neo4j_node import Neo4jNode
+from utils.neo4j_objects.neo4j_node import Neo4jNode
 
 ip = "192.168.1.2"
 port = "7687"
@@ -49,10 +49,10 @@ def get_node(a_node, driver):
     session = driver.session()
 
     query = "Match (n:" + a_node.type + " { " + a_node.unique_attr + ": \"" + a_node.unique_attr_value + "\"}) return n"
-    test = session.run(query)
+    records = session.run(query)
     session.sync()
     nodes = []
-    for record in test:
+    for record in records:
         nodes.append(process_node(record[0]))
     session.close()
     if len(nodes) < 1:
@@ -75,4 +75,26 @@ def process_node(record):
     node = Neo4jNode(label, label_switch[label], record[label_switch[label]], attr, record.id)
     return node
 
-# create_node(Neo4jNode("Database","name","Neo4j",{"name":"SQL"}), get_driver("192.168.1.2", "7687"))
+
+def get_num_of_type(driver, node_type):
+    session = driver.session()
+    query = "match(n:" + node_type + ") return count(n)"
+    records = session.run(query)
+    num_contrib = records.single()["count(n)"]
+    return num_contrib
+
+
+def get_all_of_type(driver, node_type):
+    session = driver.session()
+    query = "match(n:" + node_type + ") return n"
+    records = session.run(query)
+    all_of_type = [r for r in records.records()]
+    return all_of_type
+
+
+def get_all_authors_of_commits(driver):
+    session = driver.session()
+    query  = "match(n: Commit)-[]-(a: Author) return a.name"
+    records = session.run(query)
+    authors_of_commits = [r['a.name'] for r in records.records()]
+    return authors_of_commits

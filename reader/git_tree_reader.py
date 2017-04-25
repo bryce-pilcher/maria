@@ -1,6 +1,8 @@
 from writer import neo4j_utils as neo
 from writer.neo4j_objects.neo4j_node import Neo4jNode
-from resources import string_utils
+
+from utils import string_utils
+
 driver = neo.get_driver(neo.ip, neo.port)
 
 

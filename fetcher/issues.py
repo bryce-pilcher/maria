@@ -1,9 +1,10 @@
-from github import Github
-from configobj import ConfigObj
-from writer import h2_utils
-from resources import string_utils
-from datetime import datetime
 import time
+from datetime import datetime
+
+from configobj import ConfigObj
+from github import Github
+
+from utils import h2_utils, string_utils
 
 
 def get_issues(repository, owner, state='open'):
