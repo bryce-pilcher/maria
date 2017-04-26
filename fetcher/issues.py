@@ -52,12 +52,17 @@ def get_issues(repository, owner, state='open'):
             values = [iss, bod, labels]
             closer = issue.closed_by
             assignee = issue.assignee
-            if closer is not None:
-                values.append(closer.login)
+            if closer is not None and closer.name is not None:
+                values.append(closer.name)
             else:
                 values.append("")
-            if assignee is not None:
-                values.append(assignee.login)
+            if assignee is not None and assignee.name is not None:
+                values.append(assignee.name)
             else:
                 values.append("")
             h2_utils.write_to_database("issues", values, columns, conn)
+
+
+get_issues("tensorflow","tensorflow", state="closed")
+get_issues("keras","fchollet", state="closed")
+get_issues("spring-boot","spring-project", state="closed")

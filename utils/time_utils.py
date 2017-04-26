@@ -22,3 +22,9 @@ def new_timer(time_in_minutes):
     tim = Timer(time_in_minutes)
     print(tim)
     return tim
+
+
+def date_from_string(date):
+    split_date = date.split("Date:")[1].split()
+    str_to_date = " ".join([split_date[i] for i in range(0, len(split_date))])
+    return datetime.strptime(str_to_date, "%a %b %d %X %Y %z")

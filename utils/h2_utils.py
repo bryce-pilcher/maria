@@ -1,8 +1,9 @@
 import jaydebeapi as jdb
+from utils import string_utils as su
 
 
 def get_connection(database):
-    conn = jdb.connect("org.h2.Driver", ["jdbc:h2:" + str(database), "", ""],jars="./resources/h2-1.4.194.jar")
+    conn = jdb.connect("org.h2.Driver", ["jdbc:h2:" + str(database), "", ""],jars="../resources/h2-1.4.194.jar")
     return conn
 
 
@@ -45,15 +46,15 @@ def get_num_of_exceptions(conn):
 
 def get_num_of_issues_with_filenames(conn):
     curs = conn.cursor()
-    curs.execute('select count(*) from issues where body regexp \'[a-z|A-Z]+\.(py|java|h|cc|proto)+\\b\'')
-    num_of_filenames = curs.fetchall()
+    curs.execute('select count(*) from issues where body regexp \'' + su.file_name_regex + '\'')
+    num_of_file_names = curs.fetchall()
     curs.close()
-    return num_of_filenames[0][0]
+    return num_of_file_names[0][0]
 
 
 def get_num_of_issues_with_excep_or_filename(conn):
     curs = conn.cursor()
-    curs.execute('select count(*) from issues where body regexp \'[a-z|A-Z]+\.(py|java|h|cc|proto)+\\b\' '
+    curs.execute('select count(*) from issues where body regexp \'' + su.file_name_regex + '\' '
                  'or body regexp \'[a-z|A-Z|\.]*Exception[\s\S]*at\'')
     num_of_both = curs.fetchall()
     curs.close()
@@ -62,7 +63,7 @@ def get_num_of_issues_with_excep_or_filename(conn):
 
 def get_exceptions_or_filename(conn):
     curs = conn.cursor()
-    curs.execute('select * from issues where body regexp \'[a-z|A-Z]+\.(py|java|h|cc|proto)+\\b\' '
+    curs.execute('select * from issues where body regexp \'' + su.file_name_regex + '\' '
                  'or body regexp \'[a-z|A-Z|\.]*Exception[\s\S]*at\'')
     both = curs.fetchall()
     curs.close()

@@ -47,7 +47,9 @@ class Repo:
     num_of_issues_with_excep_or_filename = 0
     excep_or_filename = []
     repo_neo_port = ""
+    results = []
     CLOSED_BY = 3
+    accuracy = -1
 
     def __init__(self, repo, owner, language):
         self.repository = repo
@@ -166,4 +168,12 @@ class Repo:
 
         return py.iplot(data, filename=self.repository + '_list_count')
 
+    def get_accuracy(self):
+        if self.accuracy == -1:
+            right = 0
+            for a,p in self.results:
+                if a[1] == p[1]:
+                    right += 1
 
+            self.accuracy = right/len(list(self.results))
+        return self.accuracy

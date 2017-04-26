@@ -1,3 +1,8 @@
+import re
+
+file_name_regex = "\w+\.(?:py|java|h|cc|proto)\\b"
+
+
 def sanitize(string):
     if string is not None:
         string = string.strip(" ")\
@@ -16,3 +21,10 @@ def list_to_string(list_of_things):
         return ", ".join(list_of_things)
     else:
         return ""
+
+
+def regex_match(reg, string):
+    regex = re.compile(reg)
+    results = regex.findall(string)
+    return results
+
