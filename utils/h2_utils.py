@@ -3,7 +3,7 @@ from utils import string_utils as su
 
 
 def get_connection(database):
-    conn = jdb.connect("org.h2.Driver", ["jdbc:h2:" + str(database), "", ""],jars="../resources/h2-1.4.194.jar")
+    conn = jdb.connect("org.h2.Driver", ["jdbc:h2:" + str(database), "", ""], jars="./resources/h2-1.4.194.jar")
     return conn
 
 

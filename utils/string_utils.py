@@ -28,3 +28,6 @@ def regex_match(reg, string):
     results = regex.findall(string)
     return results
 
+
+def dec_to_percent(d):
+    return '{0:3.2f}'.format(d*100) + "%"

@@ -94,15 +94,16 @@ def get_all_of_type(driver, node_type):
 
 def get_all_authors_of_commits(driver):
     session = driver.session()
-    query  = "match(n: Commit)-[]-(a: Author) return a.name"
+    query = "match(n: Commit)-[]-(a: Author) return a.email as email"
     records = session.run(query)
-    authors_of_commits = [r['a.name'] for r in records.records()]
+    authors_of_commits = [r['email'] for r in records.records()]
     return authors_of_commits
 
 
 def search_for_file(driver, file_name):
     session = driver.session()
-    query = "match(:File{file_name: \'" + file_name + "\'})-[]-()-[r]-(a: Author) return a.name as name, r.date as date"
+    query = "match(:File{file_name: \'" + file_name + \
+            "\'})-[]-()-[r]-(a: Author) return a.email as email, a.name as name, r.date as date"
     records = session.run(query)
-    file_matches = [(r['name'], r['date']) for r in records.records()]
+    file_matches = [(r['name'], r['email'], r['date']) for r in records.records()]
     return file_matches

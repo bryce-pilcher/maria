@@ -1,4 +1,4 @@
-from utils import h2_utils as h2, neo4j_utils as neo
+from utils import h2_utils as h2, neo4j_utils as neo, string_utils as su, time_utils as tu
 from collections import defaultdict
 import plotly.plotly as py
 from plotly.graph_objs import *
@@ -26,7 +26,7 @@ def get_top_of_list(l):
     count = defaultdict(int)
     for c in l: count[c] += 1
     sorted_l = sorted(count, key=count.get, reverse=True)
-    return sorted_l[0]
+    return sorted_l
 
 
 class Repo:
@@ -48,8 +48,10 @@ class Repo:
     excep_or_filename = []
     repo_neo_port = ""
     results = []
-    CLOSED_BY = 3
+    CLOSED_BY = 4
     accuracy = -1
+    predicted_correctly = []
+    issues_without_name_or_email = []
 
     def __init__(self, repo, owner, language):
         self.repository = repo
@@ -170,10 +172,58 @@ class Repo:
 
     def get_accuracy(self):
         if self.accuracy == -1:
-            right = 0
-            for a,p in self.results:
-                if a[1] == p[1]:
-                    right += 1
+            right = []
+            less = []
+            for a, p in self.results:
+                if a[2] == "":
+                    if a[1] != "":
+                        if a[1] == p[1]:
+                            right.append(p)
+                        else:
+                            less.append(a)
+                else:
+                    if a[2] == p[2]:
+                        right.append(p)
 
-            self.accuracy = right/len(list(self.results))
+            self.accuracy = len(right)/(len(list(self.results))-len(less))
+            self.predicted_correctly = right
+            self.issues_without_name_or_email = less
         return self.accuracy
+
+    def store_results(self, res):
+        self.results = res
+
+    """Run the algorithm"""
+
+    def run_last_touch(self):
+        if len(list(self.results)) == 0:
+            issues = self.get_excep_or_filename()
+            driver = neo.get_driver(neo.ip, self.repo_neo_port)
+            prediction = []
+            actual = []
+            for issue in issues:
+                BODY = 1
+                for match in su.regex_match(su.file_name_regex, issue[BODY]):
+                    file_matches = neo.search_for_file(driver, match)
+                    if len(file_matches) > 0:
+                        actual.append((issue[0], issue[3], issue[4].replace("\n", "")))
+                        author_date = []
+                        for fm in file_matches:
+                            author_date.append((fm[0], fm[1], tu.date_from_string(fm[2].replace('\n', ''))))
+
+                        sorted_author_date = sorted(author_date, key=lambda a: a[2], reverse=True)
+                        prediction.append((issue[0], sorted_author_date[0][0], sorted_author_date[0][1].replace('\n', '')))
+                        break
+
+            self.results = [x for x in zip(actual, prediction)]
+            self.get_accuracy()
+        return self.results
+
+    def print_results(self):
+        print('{0:15} {1:10} {2:21} {3:15} {4:15} {5:20} {6:10}'
+              .format(self.repository, self.get_number_of_issues(),
+                      self.get_number_of_issues_with_excep_or_filename(),
+                      str(len(self.results)),
+                      str(len(self.issues_without_name_or_email)),
+                      str(len(self.predicted_correctly)),
+                      su.dec_to_percent(self.accuracy)))

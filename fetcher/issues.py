@@ -33,8 +33,8 @@ def get_issues(repository, owner, state='open'):
             r = git.get_rate_limit()
             reset_time = r.rate.reset.timestamp()
             current_time = int(datetime.utcnow().timestamp())
-            time_remaining = max(reset_time - current_time, 0) + 1
-            print("sleeping for " + str(time_remaining) + " seconds...")
+            time_remaining = max(reset_time - current_time, 0) + 10
+            print("sleeping for " + str(time_remaining) + " seconds... ")
             time.sleep(time_remaining)
 
         # assignee, body, title, get_comments()
@@ -67,6 +67,4 @@ def get_issues(repository, owner, state='open'):
             h2_utils.write_to_database("issues", values, columns, conn)
 
 
-get_issues("tensorflow","tensorflow", state="closed")
-get_issues("keras","fchollet", state="closed")
-get_issues("spring-boot","spring-project", state="closed")
+get_issues("spring-boot","spring-projects", state="closed")
