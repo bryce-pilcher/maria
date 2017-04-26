@@ -1,6 +1,6 @@
 import re
 
-file_name_regex = "\w+\.(?:py|java|h|cc|proto)\\b"
+file_name_regex = "\w+\.(?:py|java|h|cc|proto)"
 
 
 def sanitize(string):

@@ -14,8 +14,8 @@ def get_issues(repository, owner, state='open'):
     password = config['password']
     conn = h2_utils.get_connection("../databases/" + repository)
     table_name = "issues"
-    columns = ["title", "body", "labels", "closed_by", "assignee"]
-    data_types = ["VARCHAR(256)", "VARCHAR(4096)","VARCHAR(256)", "VARCHAR(64)", "VARCHAR(64)"]
+    columns = ["title", "body", "labels", "closed_by_name", "closed_by_email", "assignee"]
+    data_types = ["VARCHAR(256)", "VARCHAR(4096)","VARCHAR(256)", "VARCHAR(64)", "VARCHAR(64)", "VARCHAR(64)"]
 
     # Make sure database is set up
     h2_utils.create_table(table_name, conn)
@@ -33,7 +33,7 @@ def get_issues(repository, owner, state='open'):
             r = git.get_rate_limit()
             reset_time = r.rate.reset.timestamp()
             current_time = int(datetime.utcnow().timestamp())
-            time_remaining = max(reset_time - current_time, 0)
+            time_remaining = max(reset_time - current_time, 0) + 1
             print("sleeping for " + str(time_remaining) + " seconds...")
             time.sleep(time_remaining)
 
@@ -53,11 +53,15 @@ def get_issues(repository, owner, state='open'):
             closer = issue.closed_by
             assignee = issue.assignee
             if closer is not None and closer.name is not None:
-                values.append(closer.name)
+                values.append(string_utils.sanitize(closer.name))
+            else:
+                values.append("")
+            if closer is not None and closer.email is not None:
+                values.append(string_utils.sanitize(closer.email))
             else:
                 values.append("")
             if assignee is not None and assignee.name is not None:
-                values.append(assignee.name)
+                values.append(string_utils.sanitize(assignee.name))
             else:
                 values.append("")
             h2_utils.write_to_database("issues", values, columns, conn)

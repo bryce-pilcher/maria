@@ -61,7 +61,7 @@ def get_node(a_node, driver):
     return nodes
 
 label_switch = {
-    "Author" : "name",
+    "Author" : "email",
     "Commit" : "hash",
     "File" : "file_path"
 }

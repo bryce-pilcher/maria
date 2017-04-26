@@ -1,5 +1,5 @@
-from writer import neo4j_utils as neo
-from writer.neo4j_objects.neo4j_node import Neo4jNode
+from utils import neo4j_utils as neo
+from utils.neo4j_objects.neo4j_node import Neo4jNode
 
 from utils import string_utils
 
@@ -21,11 +21,14 @@ def read_git_log(file_to_read):
                         neo.create_node(commit_node, driver)
                 if "Author:" in line:
                     name = ""
+                    email = ""
                     for x in range(1,len(words)):
                         if "<" not in words[x]:
                             name += words[x] + " "
+                        else:
+                            email = words[x].replace("<", "").replace(">", "")
                     name = string_utils.sanitize(name)
-                    author_node = Neo4jNode("Author", "name", name, {"name": name})
+                    author_node = Neo4jNode("Author", "email", email, {"email": email, "name": name})
                     nodes = neo.get_node(author_node, driver)
                     if nodes is None:
                         neo.create_node(author_node, driver)

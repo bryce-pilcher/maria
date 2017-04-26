@@ -70,6 +70,12 @@ def get_exceptions_or_filename(conn):
     return both
 
 
+def get_e_or_f_with_bug(conn):
+    curs = conn.cursor()
+    curs.execute('select * from issues where (body regexp \'' + su.file_name_regex + '\' '
+                 'or body regexp \'[a-z|A-Z|\.]*Exception[\s\S]*at\') and labels like \'%type:%bug%\'')
+
+
 def get_all_issues(conn):
     curs = conn.cursor()
     curs.execute('select * from issues')
